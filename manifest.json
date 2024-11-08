@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Rename",
+  "version": "1.0",
+  "icons": {
+    "16":"logo.png",
+    "32":"logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "description": "Quick Rename prompts you to give your files meaningful names, making it easy to locate them later. Stay organized and save time.",
+  "permissions": ["downloads", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
+  },
+  "host_permissions": ["<all_urls>"]
+}
