@@ -12,7 +12,7 @@ const splitFilename = (filename) => {
     const dotIndex = name.lastIndexOf(".")
 
     // if no extension, then return only base name
-    if (dotIndex === -1) return { base: name, ext: "" }
+    if (dotIndex === -1) return { base: name, ext: "" };
 
     return {
         base: name.substring(0, dotIndex),
@@ -55,16 +55,16 @@ chrome.storage.local.get("originalFilename", (data) => {
 // Adding event listener to the download button when clicked
 document.getElementById("resume-download").addEventListener("click", () => {
 
-    const customeBaseName = newFilenameInput.value.trim();
-    if (!customeBaseName) return; // If empty input, do nothing
+    const customBaseName = newFilenameInput.value.trim();
+    if (!customBaseName) return; // If empty input, do nothing
 
-    const finalFileName = customeBaseName + originalExtension;
+    const finalFileName = customBaseName + originalExtension;
 
     // Checking if there is any download is in process.
     chrome.downloads.search({ state: "in_progress" }, (results) => {
         if (chrome.runtime.lastError) {
             console.error("Error checking downloads", chrome.runtime.lastError.message)
-            return
+            return;
         }
         if (results.length === 0) {
             originalFilenameElement.innerText = "No files are downloading currently !!"
@@ -102,7 +102,6 @@ document.getElementById("skip-rename").addEventListener("click", () => {
         })
     })
 })
-
 
 // Remove the original filename from the local storage
 window.addEventListener("unload", () => {
