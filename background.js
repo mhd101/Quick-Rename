@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener((message) => {
   // Checking if the customfilename received from popup.js
   if (message.action === "setFilename" && message.filename && pendingSuggest && pendingDownloadingId) {
     console.log("Received filename from popup:", message.filename)
-  } else{ 
+  } else {
     return; // nothing to rename
   }
 

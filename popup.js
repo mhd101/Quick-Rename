@@ -12,7 +12,7 @@ const splitFilename = (filename) => {
     const dotIndex = name.lastIndexOf(".")
 
     // if no extension, then return only base name
-    if (dotIndex === -1) return { base: name, ext: ""}
+    if (dotIndex === -1) return { base: name, ext: "" }
 
     return {
         base: name.substring(0, dotIndex),
@@ -20,20 +20,31 @@ const splitFilename = (filename) => {
     }
 }
 
+// track user renaming 
+let userEditing = false;
+
+// set the flag true on event "input"
+newFilenameInput.addEventListener("input", () => {
+    userEditing = true;
+})
+
 // fetching the original filename stored by background.js
 chrome.storage.local.get("originalFilename", (data) => {
     if (data.originalFilename) {
         originalFilename = data.originalFilename
 
         // split base and extension
-        const {base, ext} = splitFilename(originalFilename)
+        const { base, ext } = splitFilename(originalFilename)
         originalExtension = ext;
 
         // show full original filename in popup
         originalFilenameElement.innerText = originalFilename.split("/").pop();
 
         // prefill the input with only the base name
-        newFilenameInput.value = base;
+        if (!userEditing && !newFilenameInput.value) {
+            newFilenameInput.value = base;
+            newFilenameInput.focus()
+        }
 
     } else {
         originalFilenameElement.innerText = "No active download found !!"
@@ -45,7 +56,7 @@ chrome.storage.local.get("originalFilename", (data) => {
 document.getElementById("resume-download").addEventListener("click", () => {
 
     const customeBaseName = newFilenameInput.value.trim();
-    if(!customeBaseName) return; // If empty input, do nothing
+    if (!customeBaseName) return; // If empty input, do nothing
 
     const finalFileName = customeBaseName + originalExtension;
 
@@ -61,15 +72,15 @@ document.getElementById("resume-download").addEventListener("click", () => {
         }
     })
 
-        // Send new filename to background.js
-        chrome.runtime.sendMessage({ action: "setFilename", filename: finalFileName }, (response) => {
-            if (response && response.success) {
-                console.log("filename sent to background script: ", finalFileName)
-                window.close()
-            } else {
-                console.log("failed to send filename")
-            }
-        })
+    // Send new filename to background.js
+    chrome.runtime.sendMessage({ action: "setFilename", filename: finalFileName }, (response) => {
+        if (response && response.success) {
+            console.log("filename sent to background script: ", finalFileName)
+            window.close()
+        } else {
+            console.log("failed to send filename")
+        }
+    })
 
 })
 
