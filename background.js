@@ -10,36 +10,38 @@ chrome.downloads.onDeterminingFilename.addListener((downloadedItem, suggest) => 
     pendingDownloadingId = downloadedItem.id;
     pendingSuggest = suggest;
 
-      // storing the original filename in the local storage
-      chrome.storage.local.set({
-        originalFilename: downloadedItem.filename
-      }).then(() => {
-
-      // opening the popup
-        chrome.action.openPopup();
-      })
-
-      // taking the user input from the popup using popup.js
-      chrome.runtime.onMessage.addListener((message) => {
-
-      // checking if the custom filename received from popup.js
-      if (message.action === "setFilename" && message.filename && pendingSuggest && pendingDownloadingId) {
-        console.log("Received filename from popup:", message.filename)
-      }
-
-      // renaming the original filename
-      pendingSuggest({ filename: message.filename })
-
-      // It is necessary to return true bcz we call the suggest aysnchronously
-      // see the documentation https://developer.chrome.com/docs/extensions/reference/api/downloads?hl=en#event-onDeterminingFilename
-      return true;
+    // storing the original filename in the local storage
+    chrome.storage.local.set({
+      originalFilename: downloadedItem.filename
+    }).then(() => {
+      // opening the popup 
+      chrome.action.openPopup();
     })
   })
-    // resuming the download file after changing the filename
-    chrome.downloads.resume(downloadedItem.id)
+  // It necessary to return true bcz we call the suggest aysnchronously
+  // See the documentation https://developer.chrome.com/docs/extensions/reference/api/downloads?hl=en#event-onDeterminingFilename
+  return true;
+})
 
-    pendingDownloadingId = null;
-    pendingSuggest = null;
-    
+// taking the user input from the popup using popup.js
+chrome.runtime.onMessage.addListener((message) => {
+
+  // Checking if the customfilename received from popup.js
+  if (message.action === "setFilename" && message.filename && pendingSuggest && pendingDownloadingId) {
+    console.log("Received filename from popup:", message.filename)
+  } else{ 
+    return; // nothing to rename
+  }
+
+  // Renaming the original filename
+  pendingSuggest({ filename: message.filename })
+
+  chrome.downloads.resume(pendingDownloadingId, () => {
+    chrome.storage.local.remove("originalFilename", () => {
+      pendingDownloadingId = null
+      pendingSuggest = null
+    })
+  })
+
   return true;
 })

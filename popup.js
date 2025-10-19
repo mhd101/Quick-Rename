@@ -20,7 +20,6 @@ const splitFilename = (filename) => {
     }
 }
 
-
 // fetching the original filename stored by background.js
 chrome.storage.local.get("originalFilename", (data) => {
     if (data.originalFilename) {
@@ -37,11 +36,12 @@ chrome.storage.local.get("originalFilename", (data) => {
         newFilenameInput.value = base;
 
     } else {
-        originalFilenameElement.innerText = "No active download found!"
+        originalFilenameElement.innerText = "No active download found !!"
+        newFilenameInput.value = ""
     }
 })
 
-// download button handler
+// Adding event listener to the download button when clicked
 document.getElementById("resume-download").addEventListener("click", () => {
 
     const customeBaseName = newFilenameInput.value.trim();
@@ -57,6 +57,7 @@ document.getElementById("resume-download").addEventListener("click", () => {
         }
         if (results.length === 0) {
             originalFilenameElement.innerText = "No files are downloading currently !!"
+            newFilenameInput.value = ""
         }
     })
 
@@ -69,6 +70,7 @@ document.getElementById("resume-download").addEventListener("click", () => {
                 console.log("failed to send filename")
             }
         })
+
 })
 
 // skip rename button handler
@@ -90,7 +92,8 @@ document.getElementById("skip-rename").addEventListener("click", () => {
     })
 })
 
-// remove the original filename from the local storage
+
+// Remove the original filename from the local storage
 window.addEventListener("unload", () => {
     chrome.storage.local.remove("originalFilename")
 })
