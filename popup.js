@@ -1,20 +1,53 @@
-// creating variable to target the p tag of original filename from popup.html
+// targeting elements from popup.html
 const originalFilenameElement = document.getElementById("original-filename")
+const newFilenameInput = document.getElementById("new-filename")
 
-// Getting the original filename from background.js
+// store filename and extension separately
+let originalFilename = ""
+let originalExtension = ""
+
+// function to split the filename into base and extension
+const splitFilename = (filename) => {
+    const name = filename.split("/").pop() // actual filename
+    const dotIndex = name.lastIndexOf(".")
+
+    // if no extension, then return only base name
+    if (dotIndex === -1) return { base: name, ext: ""}
+
+    return {
+        base: name.substring(0, dotIndex),
+        ext: name.substring(dotIndex)
+    }
+}
+
+
+// fetching the original filename stored by background.js
 chrome.storage.local.get("originalFilename", (data) => {
     if (data.originalFilename) {
-        originalFilenameElement.innerText = data.originalFilename
+        originalFilename = data.originalFilename
+
+        // split base and extension
+        const {base, ext} = splitFilename(originalFilename)
+        originalExtension = ext;
+
+        // show full original filename in popup
+        originalFilenameElement.innerText = originalFilename.split("/").pop();
+
+        // prefill the input with only the base name
+        newFilenameInput.value = base;
+
     } else {
-        originalFilenameElement.innerText = "No files"
+        originalFilenameElement.innerText = "No active download found!"
     }
 })
 
-// Adding event listener to the download button when clicked
+// download button handler
 document.getElementById("resume-download").addEventListener("click", () => {
 
-    // creating a variable for custom filename to store the user input
-    const customFilename = document.getElementById("new-filename").value;
+    const customeBaseName = newFilenameInput.value.trim();
+    if(!customeBaseName) return; // If empty input, do nothing
+
+    const finalFileName = customeBaseName + originalExtension;
 
     // Checking if there is any download is in process.
     chrome.downloads.search({ state: "in_progress" }, (results) => {
@@ -27,27 +60,29 @@ document.getElementById("resume-download").addEventListener("click", () => {
         }
     })
 
-    // Checking if the user input something or not in the input field
-    if (customFilename) {
-
-        // Sending the user input data to the background.js
-        chrome.runtime.sendMessage({ action: "setFilename", filename: customFilename }, (response) => {
+        // Send new filename to background.js
+        chrome.runtime.sendMessage({ action: "setFilename", filename: finalFileName }, (response) => {
             if (response && response.success) {
-                console.log("filename sent to background script: ", customFilename)
+                console.log("filename sent to background script: ", finalFileName)
+                window.close()
             } else {
                 console.log("failed to send filename")
             }
         })
-    }
-
 })
 
+// skip rename button handler
 document.getElementById("skip-rename").addEventListener("click", () => {
     // runs this code for skip button
     chrome.storage.local.get("originalFilename", (data) => {
-        chrome.runtime.sendMessage({ action: "setFilename", filename: data.filename }, (response) => {
+        if (!data.originalFilename) return;
+
+        const skipName = data.originalFilename.split('/').pop()
+
+        chrome.runtime.sendMessage({ action: "setFilename", filename: skipName }, (response) => {
             if (response && response.success) {
-                console.log("filename sent to background script: ", data.filename)
+                console.log("Skipped renaming, used original filename ", skipName)
+                window.close()
             } else {
                 console.log("failed to send filename")
             }
@@ -55,6 +90,7 @@ document.getElementById("skip-rename").addEventListener("click", () => {
     })
 })
 
-
-// Remove the original filename from the local storage
-chrome.storage.local.remove("originalFilename")
+// remove the original filename from the local storage
+window.addEventListener("unload", () => {
+    chrome.storage.local.remove("originalFilename")
+})
