@@ -1,11 +1,8 @@
 * {
-
     font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-
-
 }
 
 .card {
@@ -58,7 +55,6 @@ label {
     text-overflow: ellipsis;
 }
 
-
 input[type="text"] {
     width: 100%;
     padding: 8px;
@@ -80,7 +76,6 @@ button {
     border-radius: 4px;
     cursor: pointer;
     width: 48%;
-    /* border: none; */
 }
 
 #resume-download {
@@ -103,10 +98,4 @@ button {
 #skip-rename:hover {
     background-color: rgba(245, 245, 245, 0.984);
     transition: all 0.2s ease-in-out;
-
-}
-
-input::selection {
-    background: #007bff;
-    color: #fff;
 }
